@@ -1,14 +1,98 @@
-// Require the necessary discord.js classes
-const { Client, Intents } = require('discord.js');
-const { token } = require('./config.json');
+// npm install discord.js@13
+const { Client, Intents } = require("discord.js");
+const { token } = require("./config.json");
 
-// Create a new client instance
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
-
-// When the client is ready, run this code (only once)
-client.on('ready', () => {
-	console.log('the bot is ready!');
+const client = new Client({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.MESSAGE_CONTENT
+  ]
 });
 
-// Login to Discord with your client's token
+const replies = [
+  { keys: ["السلام", "سلام", "هلا", "اهلا"], replies: ["وعليكم السلام 🌹", "هلا والله", "أهلين وسهلين"] },
+  { keys: ["صباح الخير"], replies: ["صباح النور ☀️", "صباح الفل"] },
+  { keys: ["مساء الخير"], replies: ["مساء النور 🌙", "مساء الورد"] },
+  { keys: ["كيفك", "كيف حالك"], replies: ["تمام الحمد لله، أنت كيفك؟", "بخير دامك بخير"] },
+  { keys: ["بوت"], replies: ["نعم؟ أنا حاضر 🤖", "تفضل، وش تحتاج؟"] },
+  { keys: ["شكرا", "ثانكس", "يعطيك العافية"], replies: ["العفو 🌹", "حياك الله", "ولا يهمك"] },
+  { keys: ["باي", "مع السلامة"], replies: ["في أمان الله", "نشوفك على خير"] },
+  { keys: ["نكتة"], replies: ["مرة كمبيوتر بردان شغل الويندوز 🥶", "مرة واحد دخل مطعم قالهم عندكم واي فاي؟ قالوا لا عندنا كبسة"] },
+  { keys: ["مين انت"], replies: ["أنا بوت ردود مؤتمتة عربي"] },
+  { keys: ["احبك"], replies: ["وأنا أحب السيرفر كله 🌹"] },
+  { keys: ["هههه", "خخخ", "lol"], replies: ["دوم الضحكة 😂", "واضح الوضع خرج عن السيطرة"] },
+  { keys: ["ملل", "طفش"], replies: ["خذ لك قهوة وارجع أقوى ☕", "افتح موضوع ونولع الشات"] },
+  { keys: ["مساعدة", "help"], replies: ["اكتب كلمات مثل: سلام، نكتة، نصيحة، تحفيز، قوانين"] },
+  { keys: ["قوانين"], replies: ["احترم الجميع، لا سبام، لا إزعاج، وخلك خفيف لطيف ✅"] },
+  { keys: ["تحفيز"], replies: ["استمر، التراكم يصنع الفرق 💪", "كل يوم تتعلم فيه شيء أنت متقدم"] },
+  { keys: ["نصيحة"], replies: ["لا تؤجل شغلك لآخر لحظة", "رتب وقتك وابدأ بالأصعب"] },
+  { keys: ["اختبار", "امتحان"], replies: ["ذاكر بذكاء لا بحفظ أعمى 📚", "الله يوفقك، ركز على المهم"] },
+  { keys: ["جافاسكربت", "javascript"], replies: ["JavaScript عظيمة إذا فهمت async/await 😎"] },
+  { keys: ["بايثون", "python"], replies: ["Python خيار ممتاز للذكاء الاصطناعي والبيانات 🐍"] },
+  { keys: ["ديسكورد", "discord"], replies: ["Discord.js يعطيك قوة كبيرة للبوتات"] },
+  { keys: ["قيتهب", "github"], replies: ["GitHub هو معرض أعمالك كمبرمج"] },
+  { keys: ["قهوة"], replies: ["القهوة وقود المطورين ☕"] },
+  { keys: ["سهران"], replies: ["لا تنسى تنام يا أسطورة 😴"] },
+  { keys: ["مشروع"], replies: ["ابدأ صغير، ثم طوره خطوة خطوة"] },
+  { keys: ["خطأ", "error", "bug"], replies: ["اقرأ الخطأ بهدوء، غالبا الحل داخله"] },
+  { keys: ["الله"], replies: ["ونعم بالله"] },
+  { keys: ["السعودية"], replies: ["دام عزك يا وطن 🇸🇦"] },
+  { keys: ["رياض"], replies: ["أهل الرياض والنعم"] },
+  { keys: ["الطائف"], replies: ["الطائف مدينة الهدا والورد 🌹"] },
+];
+
+const randomReplies = [
+  "تمام ✅", "مفهوم", "كلام جميل", "اتفق", "أختلف لكن باحترام",
+  "يا سلام", "استمر", "واضح", "جميل جدا", "ممتاز",
+  "وش تقصد؟", "كمل", "عجيب", "أسطوري", "قوي",
+  "لا بأس", "ممكن", "أكيد", "غالبا", "يمكن",
+  "خلنا نفكر", "نقطة مهمة", "أحسنت", "صح عليك", "فكرة جميلة",
+  "هههههههه", "الله يعين", "شد حيلك", "بالتوفيق", "ما شاء الله",
+  "واضح أنك فاهم", "جرب مرة ثانية", "لا تستسلم", "خذها ببساطة",
+  "ابدأ من الأساس", "رتب أفكارك", "السؤال ممتاز", "الإجابة تعتمد",
+  "هذا يحتاج تركيز", "أرسل التفاصيل", "أنا معك", "نحلها خطوة خطوة",
+  "لا تتهور", "خلك هادي", "أنت قدها", "شيء رائع", "نقاش جميل",
+  "خلها على الله", "الله يوفقك", "تم", "جاهز", "تفضل",
+  "اسألني", "وش عندك؟", "يا هلا", "منور", "حياك",
+  "صحيح", "غير صحيح", "تقريبا", "بالضبط", "مو دائما",
+  "حسب الحالة", "معلومة مفيدة", "انتبه لهذه النقطة", "ركز هنا",
+  "هذا مهم", "احفظها", "قاعدة ذهبية", "اختصرها", "خلها بسيطة",
+  "جرب الكود", "راجع السطر", "المشكلة غالبا من الإعدادات",
+  "لا تنسى تحفظ الملف", "شغل البوت من جديد", "تأكد من التوكن",
+  "تأكد من الصلاحيات", "فعل Message Content Intent", "البوت شغال؟",
+  "ارسل صورة الخطأ", "نقدر نطورها", "فكرة ممتازة", "مشروع رهيب",
+  "هذا يصلح لسيرفر كبير", "نضيف أوامر لاحقا", "نضيف قاعدة بيانات",
+  "نضيف لوحة تحكم", "نضيف لوق", "نضيف فلترة", "نضيف ردود ذكية",
+  "نضيف ترحيب", "نضيف رتب", "نضيف حماية", "نضيف إحصائيات",
+  "نضيف نظام نقاط", "نضيف XP", "نضيف أوامر إدارية", "نضيف منشن",
+  "نضيف رد خاص", "نضيف رد عشوائي", "نضيف رد حسب الكلمة",
+  "نضيف blacklist", "نضيف whitelist", "نضيف cooldown",
+  "نضيف prefix", "نضيف slash commands", "نضيف embeds",
+  "نضيف أزرار", "نضيف قوائم", "نضيف ملفات منفصلة"
+];
+
+client.once("ready", () => {
+  console.log(`✅ Logged in as ${client.user.tag}`);
+});
+
+client.on("messageCreate", async (message) => {
+  if (message.author.bot) return;
+
+  const content = message.content.toLowerCase();
+
+  for (const item of replies) {
+    if (item.keys.some(key => content.includes(key.toLowerCase()))) {
+      const reply = item.replies[Math.floor(Math.random() * item.replies.length)];
+      return message.reply(reply);
+    }
+  }
+
+  // رد عشوائي بنسبة 5% حتى لا يزعج الشات
+  if (Math.random() < 0.05) {
+    const reply = randomReplies[Math.floor(Math.random() * randomReplies.length)];
+    return message.reply(reply);
+  }
+});
+
 client.login(token);
